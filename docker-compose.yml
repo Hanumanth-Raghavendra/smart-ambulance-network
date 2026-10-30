@@ -1,0 +1,38 @@
+# One-command start:  docker compose up --build   then open http://localhost:5173
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: smart_ambulance
+      POSTGRES_USER: sanet
+      POSTGRES_PASSWORD: sanet123
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sanet -d smart_ambulance"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/smart_ambulance
+      DB_USER: sanet
+      DB_PASSWORD: sanet123
+      JWT_SECRET: change-this-to-a-long-random-string-before-any-real-use-0123456789
+      SIM_SPEED: "6"
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  dbdata:

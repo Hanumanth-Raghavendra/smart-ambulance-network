@@ -1,0 +1,28 @@
+# Render Blueprint: one web service (API + web app) and one Postgres database.
+databases:
+  - name: sanet-db
+    plan: free
+    databaseName: smart_ambulance
+    user: sanet
+
+services:
+  - type: web
+    name: smart-ambulance-network
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: sanet-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: sanet-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: sanet-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: sanet-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: sanet-db, property: password }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SIM_SPEED
+        value: "6"
